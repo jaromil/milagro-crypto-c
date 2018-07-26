@@ -1,17 +1,27 @@
-language: clang
+notifications:
+  email: false
+env:
+  - RELEASE_BRANCH="master"
+language: c
+os:
+- linux
+- osx
 sudo: required
-dist: trusty
 services:
   - docker
-
-install:
-  - gem install coveralls-lcov
-
-# The fcntl line works around a bug where Travis truncates logs and fails.
+git:
+  submodules: true
+compiler:
+- gcc
+addons:
+  apt:
+    packages:
+    - build-essential
+    - gcc
+    - make
+    - mingw-w64
+    - cmake
 script:
-  - python -c "import fcntl; fcntl.fcntl(1, fcntl.F_SETFL, 0)"
-  - make -f Makefile.docker
-  - make -f Makefile.docker buildall
-
-after_success:
-  - coveralls-lcov /home/travis/build/milagro-crypto/milagro-crypto-c/target/LINUX_64BIT_COVERAGE/coverage/amcl.info
+- mkdir -p build
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cmake . && make && make test; fi
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cmake . && make && make test; fi
